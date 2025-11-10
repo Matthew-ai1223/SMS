@@ -199,7 +199,7 @@
                 <i class="fas fa-graduation-cap"></i> EduManage Pro Admin
             </div>
             <div class="nav-links">
-                <a href="../index.php">Home</a>
+                <a href="../index.html">Home</a>
                 <a href="#">Dashboard</a>
                 <a href="#">Settings</a>
                 <a href="#">Logout</a>
@@ -242,26 +242,26 @@
         </div>
     </div>
     <script>
-        // Load dashboard data from backend
+        // Load dashboard data (backend removed - using mock data)
         document.addEventListener('DOMContentLoaded', function() {
             loadDashboardData();
         });
 
         function loadDashboardData() {
-            fetch('../../backend/api/admin/dashboard.php')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        updateStats(data.stats);
-                        updateSchoolsTable(data.schools);
-                    } else {
-                        showError('Failed to load dashboard data');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showError('Network error loading dashboard data');
-                });
+            // Simulate dashboard data loading (backend removed)
+            // In a real implementation, this would fetch from backend API
+            const mockData = {
+                success: true,
+                stats: {
+                    total: 0,
+                    pending: 0,
+                    approved: 0,
+                    rejected: 0
+                },
+                schools: []
+            };
+            updateStats(mockData.stats);
+            updateSchoolsTable(mockData.schools);
         }
 
         function updateStats(stats) {
@@ -337,34 +337,19 @@
         }
 
         function updateSchoolStatus(schoolId, status) {
-            fetch('../../backend/api/admin/update-status.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    school_id: schoolId,
-                    status: status
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showSuccess(`School ${status} successfully`);
-                    loadDashboardData(); // Reload data
-                } else {
-                    showError(data.message || 'Failed to update school status');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showError('Network error updating school status');
-            });
+            // Simulate status update (backend removed)
+            // In a real implementation, this would send to backend API
+            console.log(`Updating school ${schoolId} status to ${status} (simulated)`);
+            showSuccess(`School ${status} successfully (Backend integration required)`);
+            // Note: In a real implementation, you would reload data here
+            // loadDashboardData();
         }
 
         function viewSchool(schoolId) {
-            // Open school details in a new window or modal
-            window.open(`school-details.php?id=${schoolId}`, '_blank');
+            // View school details (backend removed)
+            // In a real implementation, this would open a details page or modal
+            console.log(`Viewing school details for ID: ${schoolId} (Backend integration required)`);
+            alert(`View school details for ID: ${schoolId}\n(Backend integration required)`);
         }
 
         function showSuccess(message) {

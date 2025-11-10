@@ -572,6 +572,8 @@
     <script src="asset/main.js"></script>
     <script>
         // Signup form specific JavaScript
+        let isSubmitting = false; // Declare outside to be accessible in all handlers
+        
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('signupForm');
             const websiteUrlField = document.getElementById('websiteUrlField');
@@ -579,6 +581,20 @@
             const logoPreview = document.getElementById('logoPreview');
             const submitBtn = document.getElementById('submitBtn');
             const loadingSpinner = document.getElementById('loadingSpinner');
+
+            // Debug: Check if elements are found
+            if (!form) {
+                console.error('Form element not found!');
+                alert('Form element not found! Please refresh the page.');
+                return;
+            }
+            if (!submitBtn) {
+                console.error('Submit button not found!');
+                alert('Submit button not found! Please refresh the page.');
+                return;
+            }
+            
+            console.log('Form and button elements found successfully');
 
             // Show/hide website URL field based on radio selection
             document.querySelectorAll('input[name="hasWebsite"]').forEach(radio => {
@@ -690,42 +706,50 @@
             // Form submission
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
-                if (!validateForm()) {
-                    return;
+                e.stopPropagation();
+                
+                console.log('Form submit event triggered');
+                
+                // Prevent double submission
+                if (isSubmitting) {
+                    console.log('Already submitting, ignoring...');
+                    return false;
                 }
+                
+                if (!validateForm()) {
+                    console.log('Form validation failed');
+                    return false;
+                }
+                
+                console.log('Form validation passed');
+                isSubmitting = true;
+                
                 // Show loading state
                 submitBtn.disabled = true;
                 loadingSpinner.style.display = 'inline-block';
                 submitBtn.innerHTML = '<span class="loading"></span>Processing...';
+                
                 // Prepare form data
                 const formData = new FormData(form);
-                fetch('../backend/api/signup.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success && data.school_id) {
-                        showSuccessMessage('School registration submitted successfully! We will contact you within 24 hours.');
-                        form.reset();
-                        logoPreview.style.display = 'none';
-                        websiteUrlField.classList.remove('show');
-                        setTimeout(() => {
-                            window.location.href = 'setup.html?school_id=' + encodeURIComponent(data.school_id);
-                        }, 2000);
-                    } else {
-                        showErrorMessage(data.message || 'Registration failed. Please try again.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showErrorMessage('Network error. Please check your connection and try again.');
-                })
-                .finally(() => {
+                
+                console.log('Form data collected:', {
+                    schoolName: formData.get('schoolName'),
+                    schoolEmail: formData.get('schoolEmail'),
+                    features: formData.getAll('features[]')
+                });
+                
+                // Simulate form processing (backend removed)
+                setTimeout(() => {
+                    console.log('Form processed successfully (simulated)');
+                    showSuccessMessage('School registration form validated successfully! (Backend integration required)');
+                    form.reset();
+                    logoPreview.style.display = 'none';
+                    websiteUrlField.classList.remove('show');
+                    isSubmitting = false;
                     submitBtn.disabled = false;
                     loadingSpinner.style.display = 'none';
                     submitBtn.innerHTML = 'Register School';
-                });
+                }, 1500);
             });
 
             // Real-time validation

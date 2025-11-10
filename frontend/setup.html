@@ -606,33 +606,37 @@
                 return;
             }
 
-            fetch(`../backend/api/school-data.php?id=${schoolId}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        schoolData = data.school;
-                        updateSchoolInfo();
-                        loadFeatures();
-                    } else {
-                        showErrorMessage(data.message || 'Failed to load school data');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showErrorMessage('Network error loading school data');
-                });
+            // Simulate school data loading (backend removed)
+            // In a real implementation, this would fetch from backend API
+            schoolData = {
+                id: schoolId,
+                school_name: 'Sample School',
+                school_email: 'school@example.com',
+                status: 'pending',
+                features: ['student_management', 'teacher_portal', 'academic_calendar']
+            };
+            updateSchoolInfo();
+            loadFeatures();
         }
 
         // Update school information display
         function updateSchoolInfo() {
+            if (!schoolData) {
+                return;
+            }
             document.getElementById('schoolName').textContent = schoolData.school_name || 'N/A';
             document.getElementById('schoolEmail').textContent = schoolData.school_email || 'N/A';
-            document.getElementById('schoolStatus').textContent = schoolData.status || 'N/A';
+            document.getElementById('schoolStatus').textContent = (schoolData.status || 'pending').charAt(0).toUpperCase() + (schoolData.status || 'pending').slice(1);
         }
 
         // Load features configuration
         function loadFeatures() {
             const featuresContainer = document.getElementById('featuresConfig');
+            if (!featuresContainer) {
+                console.error('Features container not found');
+                return;
+            }
+            
             const features = schoolData.features || [];
             
             const featureConfigs = {
@@ -646,12 +650,20 @@
                 'security_reliable': 'Security & Reliability'
             };
 
-            featuresContainer.innerHTML = features.map(feature => `
-                <div class="checkbox-item">
-                    <input type="checkbox" id="config_${feature}" name="featureConfigs[]" value="${feature}" checked>
-                    <label for="config_${feature}">${featureConfigs[feature] || feature}</label>
-                </div>
-            `).join('');
+            if (features.length === 0) {
+                featuresContainer.innerHTML = '<p style="color: #64748b; padding: 20px; text-align: center;">No features selected during registration.</p>';
+                return;
+            }
+
+            featuresContainer.innerHTML = features.map(feature => {
+                const featureName = featureConfigs[feature] || feature.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                return `
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="config_${feature}" name="featureConfigs[]" value="${feature}" checked>
+                        <label for="config_${feature}">${featureName}</label>
+                    </div>
+                `;
+            }).join('');
         }
 
         // Change step
@@ -757,64 +769,73 @@
         document.getElementById('setupForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
+            // Ensure we're on the last step
+            if (currentStep !== totalSteps) {
+                showErrorMessage('Please complete all steps before submitting.');
+                return;
+            }
+            
             if (!validateCurrentStep()) {
                 return;
             }
 
             const submitBtn = document.getElementById('submitBtn');
             const loadingSpinner = document.getElementById('loadingSpinner');
+            
+            if (!submitBtn || !loadingSpinner) {
+                showErrorMessage('Form elements not found. Please refresh the page.');
+                return;
+            }
 
             // Show loading state
             submitBtn.disabled = true;
             loadingSpinner.style.display = 'inline-block';
             submitBtn.innerHTML = '<span class="loading"></span>Setting up...';
 
-            // Prepare form data
-            const formData = new FormData();
-            formData.append('school_id', schoolData.id);
-            formData.append('academic_year', document.getElementById('academicYear').value);
-            formData.append('school_type', document.getElementById('schoolType').value);
-            formData.append('curriculum', document.getElementById('curriculum').value);
-            formData.append('school_motto', document.getElementById('schoolMotto').value);
-            formData.append('timezone', document.getElementById('timezone').value);
-            formData.append('language', document.getElementById('language').value);
-            formData.append('admin_first_name', document.getElementById('adminFirstName').value);
-            formData.append('admin_last_name', document.getElementById('adminLastName').value);
-            formData.append('admin_username', document.getElementById('adminUsername').value);
-            formData.append('admin_password', document.getElementById('adminPassword').value);
-
-            // Add selected features
-            const selectedFeatures = document.querySelectorAll('input[name="featureConfigs[]"]:checked');
-            selectedFeatures.forEach(feature => {
-                formData.append('features[]', feature.value);
-            });
-
-            // Submit to backend
-            fetch('../backend/api/setup.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showSuccessMessage('School setup completed successfully! Redirecting to dashboard...');
-                    setTimeout(() => {
-                        window.location.href = '../backend/admin/dashboard.php';
-                    }, 2000);
-                } else {
-                    showErrorMessage(data.message || 'Setup failed. Please try again.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showErrorMessage('Network error. Please check your connection and try again.');
-            })
-            .finally(() => {
-                // Reset button
+            // Validate schoolData exists
+            if (!schoolData || !schoolData.id) {
+                showErrorMessage('School data not loaded. Please refresh the page.');
                 submitBtn.disabled = false;
                 loadingSpinner.style.display = 'none';
                 submitBtn.innerHTML = 'Complete Setup';
-            });
+                return;
+            }
+
+            // Prepare form data
+            const formData = {
+                school_id: schoolData.id,
+                academic_year: document.getElementById('academicYear').value.trim(),
+                school_type: document.getElementById('schoolType').value,
+                curriculum: document.getElementById('curriculum').value,
+                school_motto: document.getElementById('schoolMotto').value.trim(),
+                timezone: document.getElementById('timezone').value,
+                language: document.getElementById('language').value,
+                admin_first_name: document.getElementById('adminFirstName').value.trim(),
+                admin_last_name: document.getElementById('adminLastName').value.trim(),
+                admin_username: document.getElementById('adminUsername').value.trim(),
+                admin_password: document.getElementById('adminPassword').value
+            };
+
+            // Add selected features
+            const selectedFeatures = document.querySelectorAll('input[name="featureConfigs[]"]:checked');
+            if (selectedFeatures.length === 0) {
+                showErrorMessage('Please select at least one feature to configure.');
+                submitBtn.disabled = false;
+                loadingSpinner.style.display = 'none';
+                submitBtn.innerHTML = 'Complete Setup';
+                return;
+            }
+            
+            formData.features = Array.from(selectedFeatures).map(feature => feature.value);
+
+            // Simulate form submission (backend removed)
+            console.log('Form data collected:', formData);
+            setTimeout(() => {
+                showSuccessMessage('School setup form validated successfully! (Backend integration required)');
+                submitBtn.disabled = false;
+                loadingSpinner.style.display = 'none';
+                submitBtn.innerHTML = 'Complete Setup';
+            }, 1500);
         });
 
         // Helper functions for showing messages
