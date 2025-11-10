@@ -398,7 +398,7 @@
 <body>
     <div class="signup-container">
         <div class="signup-card">
-            <a href="index.php" class="back-link">
+            <a href="index.html" class="back-link">
                 <i class="fas fa-arrow-left"></i>
                 Back to Home
             </a>
@@ -697,7 +697,7 @@
                         logoPreview.style.display = 'none';
                         websiteUrlField.classList.remove('show');
                         setTimeout(() => {
-                            window.location.href = 'setup.php?school_id=' + encodeURIComponent(data.school_id);
+                            window.location.href = 'setup.html?school_id=' + encodeURIComponent(data.school_id);
                         }, 2000);
                     } else {
                         showErrorMessage(data.message || 'Registration failed. Please try again.');
