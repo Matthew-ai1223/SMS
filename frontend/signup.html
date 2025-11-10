@@ -11,11 +11,24 @@
         /* Signup Page Specific Styles */
         .signup-container {
             min-height: 100vh;
-            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+            background: url('asset/image/ds.jpg') center center / cover no-repeat;
+            background-attachment: fixed;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            position: relative;
+        }
+
+        .signup-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 64, 175, 0.6);
+            z-index: 0;
         }
 
         .signup-card {
@@ -27,6 +40,7 @@
             max-width: 800px;
             position: relative;
             overflow: hidden;
+            z-index: 1;
         }
 
         .signup-card::before {
